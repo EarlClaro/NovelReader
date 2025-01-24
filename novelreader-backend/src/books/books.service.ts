@@ -1,35 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Book } from './entities/book.entity';
-import { CreateBookDto } from './dto/create-book.dto';
+import { Book } from './schemas/book.schema'; // Import Book schema
 
 @Injectable()
 export class BooksService {
-  constructor(@InjectModel(Book.name) private readonly bookModel: Model<Book>) {}
-
-  async create(createBookDto: CreateBookDto, filename: string): Promise<Book> {
-    const newBook = new this.bookModel({ ...createBookDto, filename }); 
-    return newBook.save();
-  }
-  
+  constructor(@InjectModel(Book.name) private bookModel: Model<Book>) {}
 
   async findAll(): Promise<Book[]> {
     return this.bookModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Book> {
-    const book = await this.bookModel.findById(id).exec();
-    if (!book) {
-      throw new NotFoundException(`Book with ID "${id}" not found`);
-    }
-    return book;
-  }  
+  async create(file: Express.Multer.File): Promise<Book> {
+    const newBook = new this.bookModel({
+      title: file.originalname,
+      coverImage: `/uploads/${file.filename}`,
+      filePath: `/books/${file.filename}`, // Save the file path for future retrieval
+    });
+    return newBook.save();
+  }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.bookModel.findByIdAndDelete(id).exec();
-    if (!result) {
-      throw new NotFoundException(`Book with ID "${id}" not found`);
-    }
+  async remove(id: string): Promise<any> {
+    return this.bookModel.findByIdAndDelete(id).exec();
   }
 }
