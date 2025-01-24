@@ -1,30 +1,31 @@
-import { Controller, Get, Post, Delete, Param, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Get, UploadedFile, UseInterceptors, Body } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { InjectModel } from '@nestjs/mongoose';
-import { Book } from './schemas/book.schema'; // Import Book schema
-import { Model } from 'mongoose';
+import { diskStorage } from 'multer';
+import * as path from 'path';
 
-@Controller('api/books')
+@Controller('books')
 export class BooksController {
-  constructor(
-    private readonly booksService: BooksService,
-    @InjectModel(Book.name) private bookModel: Model<Book>,
-  ) {}
-
-  @Get()
-  async getBooks() {
-    return this.booksService.findAll();
-  }
+  constructor(private readonly booksService: BooksService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('book'))
-  async uploadBook(@UploadedFile() file: Express.Multer.File) {
-    return this.booksService.create(file);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const filename = `${Date.now()}-${file.originalname}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
+  uploadFile(@UploadedFile() file: Express.Multer.File, @Body('title') title: string) {
+    return this.booksService.create(file, title);
   }
 
-  @Delete(':id')
-  async deleteBook(@Param('id') id: string) {
-    return this.booksService.remove(id);
+  @Get()
+  findAll() {
+    return this.booksService.findAll();
   }
 }
