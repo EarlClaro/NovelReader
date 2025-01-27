@@ -1,49 +1,50 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Book } from './book.entity'; // Import TypeORM entity
+import { Book } from './entity/book.entity';
+import { CreateBookDto } from './dto/create-book.dto';
+import { UpdateBookDto } from './dto/update-book.dto';
+import { FilterBookDto } from './dto/filter-book.dto';
 
 @Injectable()
 export class BooksService {
   constructor(
-    @InjectRepository(Book) private readonly bookRepository: Repository<Book>, // Inject the repository for Book
+    @InjectRepository(Book)
+    private bookRepository: Repository<Book>,
   ) {}
 
-  // Find all books
-  async findAll(): Promise<Book[]> {
-    return this.bookRepository.find();
+  // Get all books with optional filtering
+  async findAll(filterBookDto: FilterBookDto = {}): Promise<Book[]> {
+    return this.bookRepository.find({
+      where: filterBookDto,  // Filters can be applied here
+    });
   }
 
-  // Find a book by its ID
-  async findById(id: string): Promise<Book | null> {
-    return this.bookRepository.findOne(id); // Find by ID using the repository
+  // Find book by ID
+  async findById(id: number): Promise<Book> {
+    const book = await this.bookRepository.findOne({ where: { id } });  // Find with 'where' clause
+    if (!book) {
+      throw new Error('Book not found');  // Handle the case where no book is found
+    }
+    return book;
   }
 
   // Create a new book
-  async create(bookData: Book): Promise<Book> {
-    const book = this.bookRepository.create(bookData); // Create a new book instance
-    return this.bookRepository.save(book);  // Save the new book to the database
+  async create(createBookDto: CreateBookDto): Promise<Book> {
+    const book = this.bookRepository.create(createBookDto);
+    return this.bookRepository.save(book);
   }
 
-  // Update an existing book
-  async update(id: string, bookData: Book): Promise<Book> {
-    const existingBook = await this.findById(id);
-    if (!existingBook) {
-      throw new NotFoundException('Book not found');
-    }
-
-    // Merge existing data with new data
-    Object.assign(existingBook, bookData);
-    return this.bookRepository.save(existingBook);  // Save the updated book to the database
+  // Update a book
+  async update(id: number, updateBookDto: UpdateBookDto): Promise<Book> {
+    await this.findById(id);  // Ensure the book exists
+    await this.bookRepository.update(id, updateBookDto);
+    return this.findById(id);  // Return the updated book
   }
 
-  // Delete a book by its ID
-  async remove(id: string): Promise<void> {
-    const existingBook = await this.findById(id);
-    if (!existingBook) {
-      throw new NotFoundException('Book not found');
-    }
-
-    await this.bookRepository.remove(existingBook);  // Remove the book from the database
+  // Delete a book
+  async remove(id: number): Promise<void> {
+    const book = await this.findById(id);  // Ensure the book exists
+    await this.bookRepository.remove(book);
   }
 }

@@ -1,67 +1,39 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { Book } from './book.entity'; 
-import { FileInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer';
-import { v4 as uuidv4 } from 'uuid';
+import { CreateBookDto } from './dto/create-book.dto';
+import { UpdateBookDto } from './dto/update-book.dto';
+import { FilterBookDto } from './dto/filter-book.dto';
+import { Book } from './entity/book.entity';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Get()
-  async getBooks(): Promise<Book[]> {
-    return this.booksService.findAll(); // Fetch all books
+  async findAll(@Body() filterBookDto: FilterBookDto = {}): Promise<Book[]> {
+    return this.booksService.findAll(filterBookDto);  // Pass the filter or empty object
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: string): Promise<Book> {
+    return this.booksService.findById(Number(id));  // Convert id to number
   }
 
   @Post()
-  async addBook(@Body() bookData: Book): Promise<Book> {
-    // Generate a unique ID for the new book if not provided
-    bookData.id = uuidv4();
-    return this.booksService.create(bookData); // Call the service to create the book
-  }
-
-  @Put(':id/file')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: multer.diskStorage({
-      destination: './uploads',  // Directory to store uploaded files
-      filename: (req, file, cb) => {
-        const fileName = Date.now() + '-' + file.originalname;  // Unique file name
-        cb(null, fileName);
-      }
-    }),
-    limits: {
-      fileSize: 50 * 1024 * 1024,  // Limit file size to 50MB
-    },
-  }))
-  async addFileToBook(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File
-  ): Promise<Book> {
-    const updatedBook = await this.booksService.findById(id); // Fetch the book by its ID
-    if (!updatedBook) {
-      throw new Error('Book not found');
-    }
-
-    if (file) {
-      updatedBook.filePath = file.path;  // Save the file path
-      updatedBook.fileType = file.mimetype;  // Save the file type
-      return this.booksService.update(id, updatedBook);  // Update the book with file data
-    }
-
-    return updatedBook; // If no file is uploaded, return the book data without changes
+  async create(@Body() createBookDto: CreateBookDto): Promise<Book> {
+    return this.booksService.create(createBookDto);
   }
 
   @Put(':id')
-  async updateBook(
+  async update(
     @Param('id') id: string,
-    @Body() bookData: Book
+    @Body() updateBookDto: UpdateBookDto
   ): Promise<Book> {
-    return this.booksService.update(id, bookData);
+    return this.booksService.update(Number(id), updateBookDto);  // Convert id to number
   }
 
   @Delete(':id')
-  async deleteBook(@Param('id') id: string): Promise<void> {
-    return this.booksService.remove(id);
+  async remove(@Param('id') id: string): Promise<void> {
+    return this.booksService.remove(Number(id));  // Convert id to number
   }
 }

@@ -1,12 +1,16 @@
+import AddBookForm from "@/components/AddBookForm";
+import BooksList from "@/components/BooksList";
+import Layout from "@/components/Layout";
 
-import BooksList from "../components/BooksList";
-import AddBookForm from "../components/AddBookForm";
-
-export default function Home() {
+const HomePage = () => {
   return (
-    <div className="container mx-auto p-6">
-      <BooksList />
-      <AddBookForm />
-    </div>
+    <Layout>
+      <div className="space-y-8">
+        <AddBookForm />
+        <BooksList />
+      </div>
+    </Layout>
   );
-}
+};
+
+export default HomePage;
