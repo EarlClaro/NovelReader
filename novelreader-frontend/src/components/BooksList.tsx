@@ -1,43 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios";
-import styles from "./BooksList.module.css"; // Importing the CSS module for styling
+import React, { useState, useEffect } from "react";
+import AddBookForm from "../components/AddBookForm";
+import styles from "./Book.module.css";
 
-const BooksList = () => {
-  const [books, setBooks] = useState([]);
+const BookList = () => {
+  const [books, setBooks] = useState([]); 
+  const [isAdding, setIsAdding] = useState(false); 
 
+  // Fetch books
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/books");
-        setBooks(response.data);
+        const response = await fetch("http://localhost:3000/books");
+        const data = await response.json();
+        setBooks(data);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     };
-
     fetchBooks();
   }, []);
 
+  // Function to add a new book and refresh the list
+  const handleAddBook = (newBook) => {
+    setBooks((prevBooks) => [...prevBooks, newBook]);
+    setIsAdding(false); 
+  };
+
   return (
-    <div className={styles.container}>
-      <h2 className={styles.header}>Book List</h2>
-      <div className={styles.grid}>
-        {books.slice(0, 10).map((book) => (
-          <div key={book.id} className={styles.card}>
-            <div className={styles.cardContent}>
-              <h3 className={styles.cardTitle}>{book.title}</h3>
-              <p className={styles.cardAuthor}>{book.author}</p>
-              <p className={styles.cardDescription}>
-                {book.description.slice(0, 100)}...
-              </p>
-            </div>
+    <div className={styles.bookListContainer}>
+      <div className={styles.bookList}>
+        {/* Render all book cards, and show the AddBookForm card conditionally */}
+        {books.map((book) => (
+          <div key={book.id} className={styles.bookCard}>
+            <h3>{book.title}</h3>
+            <p>{book.author}</p>
+            <p>{book.description}</p>
           </div>
         ))}
+
+        {/* Add Book Card - Show AddBookForm on click */}
+        {!isAdding && (
+          <div
+            className={styles.addBookCard}
+            onClick={() => setIsAdding(true)}
+            title="Add new book" // Set isAdding to true to show AddBookForm
+          >
+            <span className={styles.plusIcon}>+</span>
+            <span style={{color:"grey"}}>Add new book</span>
+          </div>
+        )}
+
+        {/* Show AddBookForm when isAdding is true */}
+        {isAdding && (
+          <div className={styles.addBookCard}>
+            <AddBookForm onBookAdded={handleAddBook} />
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default BooksList;
+export default BookList;

@@ -1,17 +1,12 @@
-import AddBookForm from "@/components/AddBookForm";
-import BooksList from "@/components/BooksList";
-import Layout from "@/components/Layout";
-import Hero from "@/components/Hero";
+import AddBookForm from "../components/AddBookForm";
+import BooksList from "../components/BooksList";
+import Header from "../components/Header";
 
-const HomePage = () => {
+export default function Home() {
   return (
-    <Layout>
-      <div>
-        <AddBookForm />
-        <BooksList />
-      </div>
-    </Layout>
+    <div>
+      <Header />
+      <BooksList />
+    </div>
   );
-};
-
-export default HomePage;
+}

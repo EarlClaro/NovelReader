@@ -1,27 +1,23 @@
+/* ./styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
 body {
-  @apply bg-white text-gray-900 font-sans leading-relaxed;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  @apply text-gray-800 font-semibold;
-}
-
-button {
-  @apply transition-colors duration-200 ease-in-out;
-}
-
-input, textarea, select, button {
-  @apply rounded-md border border-gray-300;
-}
-
-input:focus, textarea:focus, select:focus {
-  @apply ring-2 ring-blue-500 outline-none;
-}
-
-a {
-  @apply text-blue-500 hover:text-blue-600;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
 }
