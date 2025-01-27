@@ -12,15 +12,40 @@
 .bookList {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px; 
+  gap: 16px;
   width: 100%;
   justify-items: center;
 }
 
+/* Mobile Responsive: Adjust grid layout for small screens */
+@media (max-width: 1200px) {
+  .bookList {
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  }
+}
+
+@media (max-width: 900px) {
+  .bookList {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  }
+}
+
+@media (max-width: 600px) {
+  .bookList {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  }
+}
+
+@media (max-width: 400px) {
+  .bookList {
+    grid-template-columns: 1fr; /* 1 column */
+  }
+}
+
 /* Book Card Styles */
 .bookCard, .addBookCard {
-  width: 240px; 
-  height: 300px; 
+  width: 240px;
+  height: 300px;
   background-color: #f5f5f5;
   border-radius: 12px;
   display: flex;
@@ -32,6 +57,21 @@
   transition: background-color 0.3s ease;
   padding: 1rem;
   text-align: center;
+}
+
+/* Mobile Responsive: Adjust card sizes */
+@media (max-width: 600px) {
+  .bookCard, .addBookCard {
+    width: 200px; /* Adjust width */
+    height: 250px; /* Adjust height */
+  }
+}
+
+@media (max-width: 400px) {
+  .bookCard, .addBookCard {
+    width: 180px; /* Adjust width for small screens */
+    height: 230px; /* Adjust height for small screens */
+  }
 }
 
 /* Hover Effect for Cards */
@@ -57,7 +97,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; 
+  z-index: 1000;
 }
 
 /* Modal Box */
@@ -69,7 +109,14 @@
   width: 100%;
   max-width: 500px;
   position: relative;
-  animation: fadeIn 0.3s ease-in-out; 
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Mobile Responsive: Adjust modal width */
+@media (max-width: 600px) {
+  .modal {
+    width: 90%; /* Adjust modal width */
+  }
 }
 
 @keyframes fadeIn {
@@ -99,6 +146,7 @@
   gap: 1rem;
 }
 
+/* Input and Textarea Styles */
 .input, .textarea {
   padding: 1rem;
   border: 1px solid #e2e8f0;
@@ -107,6 +155,7 @@
   outline: none;
 }
 
+/* Focus Effects */
 .input:focus, .textarea:focus {
   border-color: #3182ce;
   box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
@@ -129,6 +178,14 @@
   transition: background-color 0.3s;
 }
 
+/* Mobile Responsive: Adjust button size */
+@media (max-width: 600px) {
+  .submitButton {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.5rem;
+  }
+}
+
 .submitButton:hover {
   background-color: #45a049;
 }
@@ -145,6 +202,22 @@
   transition: color 0.3s ease;
 }
 
+/* Mobile Responsive: Adjust close button size */
+@media (max-width: 600px) {
+  .closeButton {
+    font-size: 1.2rem;
+  }
+}
+
 .closeButton:hover {
   color: #000000;
+}
+
+.activeCard {
+  background-color: #f0f0f0; /* Light background for the selected book */
+  border: 2px solid #007BFF; /* Border to indicate the active selection */
+  text-align: justify;
+}
+.bookDetails {
+  margin-top: 10px;
 }

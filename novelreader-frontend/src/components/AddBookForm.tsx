@@ -9,9 +9,38 @@ const AddBookForm = ({ onBookAdded }) => {
     title: "",
     author: "",
     description: "",
+    genre: "", // Added genre to bookData
   });
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const genres = [
+    "Horror",
+    "Fantasy",
+    "Mystery",
+    "Science fiction",
+    "Historical fantasy",
+    "Romance",
+    "Adventure fiction",
+    "Literary fiction",
+    "Historical",
+    "Thriller",
+    "Young adult",
+    "Children's literature",
+    "Contemporary literature",
+    "Dystopian Fiction",
+    "Fairy tale",
+    "Magic realism",
+    "Mystery and suspense",
+    "Short story",
+    "Western fiction",
+    "Comedy",
+    "Erotic thriller",
+    "Romantic fantasy",
+    "Gothic fiction",
+    "Paranormal",
+    "Fan-Fiction",
+  ];
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -23,7 +52,7 @@ const AddBookForm = ({ onBookAdded }) => {
       onBookAdded(response.data);
 
       setIsModalVisible(false); // Close the modal after submission
-      setBookData({ title: "", author: "", description: "" }); // Reset form
+      setBookData({ title: "", author: "", description: "", genre: "" }); // Reset form
     } catch (error) {
       console.error("Error adding book:", error);
     }
@@ -74,6 +103,20 @@ const AddBookForm = ({ onBookAdded }) => {
                 }
                 className={styles.textarea}
               />
+              <select
+                value={bookData.genre}
+                onChange={(e) =>
+                  setBookData({ ...bookData, genre: e.target.value })
+                }
+                className={styles.input}
+              >
+                <option value="">Select Genre</option>
+                {genres.map((genre, index) => (
+                  <option key={index} value={genre}>
+                    {genre}
+                  </option>
+                ))}
+              </select>
               <button type="submit" className={styles.submitButton}>
                 Add Book
               </button>
