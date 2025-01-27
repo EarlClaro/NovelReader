@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BooksModule } from './books/books.module';
-import { Book } from './books/book.schema';
+import { Book } from './books/book.entity';
 import * as dotenv from 'dotenv';
 import { MulterModule } from '@nestjs/platform-express';
 

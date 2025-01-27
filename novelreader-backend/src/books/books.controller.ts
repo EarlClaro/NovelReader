@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { Book } from './book.schema';
+import { Book } from './book.entity'; 
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller('books')
 export class BooksController {
@@ -10,13 +11,20 @@ export class BooksController {
 
   @Get()
   async getBooks(): Promise<Book[]> {
-    return this.booksService.findAll();
+    return this.booksService.findAll(); // Fetch all books
   }
 
   @Post()
+  async addBook(@Body() bookData: Book): Promise<Book> {
+    // Generate a unique ID for the new book if not provided
+    bookData.id = uuidv4();
+    return this.booksService.create(bookData); // Call the service to create the book
+  }
+
+  @Put(':id/file')
   @UseInterceptors(FileInterceptor('file', {
     storage: multer.diskStorage({
-      destination: './uploads',  // Directory for storing uploaded files
+      destination: './uploads',  // Directory to store uploaded files
       filename: (req, file, cb) => {
         const fileName = Date.now() + '-' + file.originalname;  // Unique file name
         cb(null, fileName);
@@ -26,21 +34,28 @@ export class BooksController {
       fileSize: 50 * 1024 * 1024,  // Limit file size to 50MB
     },
   }))
-  async addBook(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() bookData: Book,
+  async addFileToBook(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File
   ): Promise<Book> {
-    if (file) {
-      bookData.filePath = file.path;  // Store file path
-      bookData.fileType = file.mimetype;  // Store file type (MIME type)
+    const updatedBook = await this.booksService.findById(id); // Fetch the book by its ID
+    if (!updatedBook) {
+      throw new Error('Book not found');
     }
-    return this.booksService.create(bookData);  // Call the service to create the book
+
+    if (file) {
+      updatedBook.filePath = file.path;  // Save the file path
+      updatedBook.fileType = file.mimetype;  // Save the file type
+      return this.booksService.update(id, updatedBook);  // Update the book with file data
+    }
+
+    return updatedBook; // If no file is uploaded, return the book data without changes
   }
 
   @Put(':id')
   async updateBook(
     @Param('id') id: string,
-    @Body() bookData: Book,
+    @Body() bookData: Book
   ): Promise<Book> {
     return this.booksService.update(id, bookData);
   }
