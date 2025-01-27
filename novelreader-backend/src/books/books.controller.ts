@@ -1,47 +1,52 @@
-import { Controller, Post, Body, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, Param, Delete, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
-import { extname } from 'path';
-import { diskStorage } from 'multer';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
-  @Post('add')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-        },
-      }),
-      fileFilter: (req, file, callback) => {
-        const allowedMimeTypes = ['application/pdf', 'application/epub+zip'];
-        if (allowedMimeTypes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(new HttpException('Invalid file type', HttpStatus.BAD_REQUEST), false);
-        }
-      },
+  @Get()
+  async getBooks(): Promise<Book[]> {
+    return this.booksService.findAll();
+  }
+
+  @Post()
+  @UseInterceptors(FileInterceptor('file', {
+    storage: multer.diskStorage({
+      destination: './uploads',  // Directory for storing uploaded files
+      filename: (req, file, cb) => {
+        const fileName = Date.now() + '-' + file.originalname;  // Unique file name
+        cb(null, fileName);
+      }
     }),
-  )
-  async addBook(@Body() bookData: { title: string; author: string; summary?: string }, @UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new HttpException('File upload is required', HttpStatus.BAD_REQUEST);
+    limits: {
+      fileSize: 50 * 1024 * 1024,  // Limit file size to 50MB
+    },
+  }))
+  async addBook(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() bookData: Book,
+  ): Promise<Book> {
+    if (file) {
+      bookData.filePath = file.path;  // Store file path
+      bookData.fileType = file.mimetype;  // Store file type (MIME type)
     }
+    return this.booksService.create(bookData);  // Call the service to create the book
+  }
 
-    const newBook = {
-      ...bookData,
-      fileUrl: `/uploads/${file.filename}`, // File URL will be accessible through /uploads/{filename}
-      dateAdded: new Date(),
-    };
+  @Put(':id')
+  async updateBook(
+    @Param('id') id: string,
+    @Body() bookData: Book,
+  ): Promise<Book> {
+    return this.booksService.update(id, bookData);
+  }
 
-    return this.booksService.create(newBook); // Make sure you handle the save process in BooksService
+  @Delete(':id')
+  async deleteBook(@Param('id') id: string): Promise<void> {
+    return this.booksService.remove(id);
   }
 }

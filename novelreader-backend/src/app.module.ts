@@ -1,27 +1,30 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BooksModule } from './books/books.module';
+import { Book } from './books/book.schema';
 import * as dotenv from 'dotenv';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { AppController } from './app.controller';  
-import { BooksModule } from './books/books.module'; 
+import { MulterModule } from '@nestjs/platform-express';
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
 @Module({
   imports: [
-  // Serve static files from the 'uploads' folder
-  ServeStaticModule.forRoot({
-    rootPath: join(__dirname, '..', 'uploads'),
-    serveRoot: '/uploads', // This will serve the files under http://localhost:3001/uploads
-  }),
-  // MongoDB connection
-    MongooseModule.forRoot(process.env.MONGO_URI || '', {}),
-  // Import the BooksModule
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST || 'localhost', 
+      port: parseInt(process.env.DB_PORT || '3306', 10), 
+      username: process.env.DB_USERNAME || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_DATABASE || 'novelreader',
+      entities: [Book],
+      synchronize: true,
+    }),
     BooksModule,
+    MulterModule.register({
+      dest: './uploads',  // Folder to store the uploaded files
+    }),
   ],
-  controllers: [AppController],  // Register AppController here
-  providers: [],
 })
 export class AppModule {}
+

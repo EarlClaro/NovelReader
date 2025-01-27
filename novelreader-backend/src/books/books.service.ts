@@ -1,18 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Book } from './book.schema';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class BooksService {
-  constructor(@InjectModel(Book.name) private readonly bookModel: Model<Book>) {}
+  constructor(
+    @InjectRepository(Book)
+    private booksRepository: Repository<Book>,
+  ) {}
 
-  async findAll(): Promise<Book[]> {
-    return this.bookModel.find().exec();
+  // Create a new book
+  async create(bookData: Book): Promise<Book> {
+    const book = this.booksRepository.create(bookData);
+    return await this.booksRepository.save(book);
   }
 
-  async create(bookData: Partial<Book>): Promise<Book> {
-    const newBook = new this.bookModel(bookData);
-    return newBook.save();
+  // Get all books
+  async findAll(): Promise<Book[]> {
+    return this.booksRepository.find();
+  }
+
+  // Update an existing book by ID
+  async update(id: string, bookData: Partial<Book>): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: { id },
+    });
+
+    if (!book) {
+      throw new NotFoundException(`Book with ID ${id} not found`);
+    }
+
+    // Update the book with the new data
+    Object.assign(book, bookData);
+    return this.booksRepository.save(book);
+  }
+
+  // Delete a book by ID
+  async remove(id: string): Promise<void> {
+    const book = await this.booksRepository.findOne({
+      where: { id },
+    });
+
+    if (!book) {
+      throw new NotFoundException(`Book with ID ${id} not found`);
+    }
+
+    await this.booksRepository.delete(id);
   }
 }

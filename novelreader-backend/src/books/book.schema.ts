@@ -1,22 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Schema()
-export class Book extends Document {
-  @Prop({ required: true })
+@Entity()
+export class Book {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   title: string;
 
-  @Prop({ required: true })
+  @Column()
   author: string;
 
-  @Prop()
-  summary: string;
+  @Column()
+  description: string;
 
-  @Prop()
-  dateAdded: Date;
+  @Column()
+  filePath: string;
 
-  @Prop({ required: true })
-  fileUrl: string; // Path to the uploaded file
+  @Column()
+  fileType: string; 
 }
-
-export const BookSchema = SchemaFactory.createForClass(Book);
