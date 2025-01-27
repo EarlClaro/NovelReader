@@ -148,11 +148,15 @@
 
 /* Input and Textarea Styles */
 .input, .textarea {
-  padding: 1rem;
+  padding: 0.5rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
+  margin: auto;
+  width: 100%;
+  font-size: 14px;
+  align-self: center;
 }
 
 /* Focus Effects */
@@ -163,7 +167,7 @@
 
 .textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 50px;
 }
 
 /* Buttons */
